@@ -12,11 +12,11 @@ by default set to 0 ([physical pin #11](https://pinout.xyz/pinout/pin11_gpio17))
 ## Installing
 
     # apt install wiringpi
-    # curl -sSfo /usr/bin/opendoor <link to opendoor script>
+    # curl -sSfo /usr/bin/open-door <link to opendoor script>
 
 ## Usage
 
-    $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=3 opendoor
+    $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
 
 ## References
 

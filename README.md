@@ -1,7 +1,6 @@
 ## Hardware preparations
 
-This has been tested on a Raspberry Pi 1 Model B using latest Raspbian as of time of writing.
-
+- Tested on a Raspberry Pi 1 Model B using Raspbian 9.1
 - The door lock is opened by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
 
@@ -14,10 +13,10 @@ This has been tested on a Raspberry Pi 1 Model B using latest Raspbian as of tim
 
 Configurable environment variables and their defaults:
 
-  - `GPIO_PIN_DOOR=0` GPIO pin to trigger lock
+  - `GPIO_PIN_DOOR=0` GPIO pin to trigger door lock
   - `STAY_UNLOCKED_SEC=2` How long should the pin be kept high
 
-Open the door
+Trigger the door lock
 
 ```
 $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door

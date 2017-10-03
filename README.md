@@ -1,7 +1,9 @@
-## Hardware preparations
+# door
+
+GPIO door lock control
 
 - Tested on a Raspberry Pi 1 Model B using Raspbian 9.1
-- The door lock is opened by raising a single GPIO pin
+- The door lock is triggered by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
 
 ## Installing

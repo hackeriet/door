@@ -24,6 +24,18 @@ Trigger the door lock
 $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
 ```
 
+## Trigger lock over network
+
+### SSH
+
+Connect with SSH from the local network and use the password stored from hackerpass `infrastructure/entry@humladoor-new.haus.hackeriet.no`.
+
+```
+$ ssh entry@10.10.3.15 open-door
+```
+
+Using a static IP as there seems to be some problems with hostname resolution at the moment. The hostname of this system will eventually change anyway.
+
 ## References
 
 - [wiringPi wiring scheme][1]

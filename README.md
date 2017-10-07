@@ -38,7 +38,7 @@ Using a static IP as there seems to be some problems with hostname resolution at
 
 ### Web interface
 
-Username and password in `hackerpass door-remote.hackeriet.no`
+> **NOTE** Up to date information about this functionality can be found in https://github.com/hackeriet/door-remote
 
 https://door-remote.hackeriet.no
 

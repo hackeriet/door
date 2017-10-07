@@ -36,6 +36,12 @@ $ ssh entry@10.10.3.15 open-door
 
 Using a static IP as there seems to be some problems with hostname resolution at the moment. The hostname of this system will eventually change anyway.
 
+### Web interface
+
+Username and password in `hackerpass door-remote.hackeriet.no`
+
+https://door-remote.hackeriet.no
+
 ## References
 
 - [wiringPi wiring scheme][1]

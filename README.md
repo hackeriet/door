@@ -8,7 +8,7 @@ GPIO door lock control
 
 ## Installing
 
-    # apt install wiringpi
+    # apt install wiringpi libnfc libnfc-dev build-essential
     # curl -sSfo /usr/bin/open-door https://raw.githubusercontent.com/hackeriet/door/master/open-door
 
 ## Usage

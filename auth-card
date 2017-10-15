@@ -2,7 +2,6 @@
 set -ux
 
 AUTHORIZED_CARDS=${AUTHORIZED_CARDS:-card_ids.txt}
-SUCCESS_SCRIPT=${SUCCESS_SCRIPT:-open-door}
 
 CARD_ID=${1:-}
 
@@ -19,6 +18,4 @@ if [ $? -gt 0 ]; then
   echo "Card is not authorized: $CARD_ID"
   exit 2
 fi
-
-$SUCCESS_SCRIPT
 

@@ -34,7 +34,7 @@ int DEBUG = 1;
 
 void shutdown(int foo) {
   debug_print("%s\n", "Caught SIGINT, shutting down ..");
-	keep_running = false;
+  keep_running = false;
 }
 
 /*
@@ -69,7 +69,7 @@ int main(int argc, const char *argv[]) {
 
   int res;
 
-	signal(SIGINT, shutdown);
+  signal(SIGINT, shutdown);
 
   nfc_init(&context);
   if (context == NULL) {
@@ -79,9 +79,9 @@ int main(int argc, const char *argv[]) {
   (void)argc;
 
   pnd = nfc_open(context, NULL);
- 
+
   if (pnd == NULL) {
-    printf("ERROR: %s", "Unable to open NFC device.");
+    printf("ERROR: %s\n", "Unable to open NFC device.");
     exit(EXIT_FAILURE);
   }
 
@@ -90,7 +90,7 @@ int main(int argc, const char *argv[]) {
     exit(EXIT_FAILURE);
   }
   printf("# NFC reader %s opened\n", nfc_device_get_name(pnd));
- 
+
   // http://www.libnfc.org/api/group__initiator.html#gaed2949299759f9a889f6c93f5c365296
   const uint8_t pollnr = 3;
   const uint8_t period = 1;
@@ -103,9 +103,9 @@ int main(int argc, const char *argv[]) {
   while (keep_running) {
     debug_print("%s\n", "# polling ...");
 
-		res = nfc_initiator_poll_target(pnd, nmMifare, szModulations, pollnr, period, &nt);
+    res = nfc_initiator_poll_target(pnd, nmMifare, szModulations, pollnr, period, &nt);
     if (res == NFC_ETIMEOUT || res == NFC_ECHIP) {
-			debug_print("%s\n", "# no card found.");
+      debug_print("%s\n", "# no card found.");
       continue;
     }
     else if (res < 0) {
@@ -114,23 +114,22 @@ int main(int argc, const char *argv[]) {
       nfc_close(pnd);
       nfc_exit(context);
       exit(EXIT_FAILURE);
-		}
+    }
 
-		if (res > 0) {
+    if (res > 0) {
       printf("CARDSEEN: 0x");
       for (int len = 0; len < nt.nti.nai.szUidLen; len++) {
         printf("%02x", nt.nti.nai.abtUid[len]);
       }
       printf("\n");
-			debug_print("%s\n", "# Waiting for card to be removed ...");
-			fflush(stdout);
+      debug_print("%s\n", "# Waiting for card to be removed ...");
+      fflush(stdout);
 
-			while (0 == nfc_initiator_target_is_present(pnd, NULL)) {}
-			// nfc_perror(pnd, "nfc_initiator_target_is_present");
-			debug_print("%s\n", "# card has been removed.");
-		}
+      while (0 == nfc_initiator_target_is_present(pnd, NULL)) {}
+      // nfc_perror(pnd, "nfc_initiator_target_is_present");
+      debug_print("%s\n", "# card has been removed.");
+    }
   } // while
-
   nfc_close(pnd);
   nfc_exit(context);
 

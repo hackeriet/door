@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-import logging
+import os, re, logging
 from subprocess import Popen, PIPE
-import re
 
 logging.basicConfig(level='DEBUG')
 log = logging.getLogger(__name__)
 
-card_id_pattern = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
-authorized_cards = './card_ids.txt'
-reader_daemon = './barbatos/barbatos'
-#reader_daemon = './test/reader-daemon'
-
-def open_door():
-  with Popen(["./open-door"]) as proc:
-    proc.wait()
-    return proc.returncode == 0
+testing = os.getenv('TESTING', False)
+card_id_pattern = re.compile('(0x[a-f0-9]+)', re.IGNORECASE)
+reader_daemon = './barbatos/barbatos' if not testing else './test/reader-daemon'
+authorized_cards = os.getenv('AUTHORIZED_CARDS', 'test/card_ids.txt')
 
 def auth_card(card_id):
   with open(authorized_cards, encoding='utf-8') as fd:
@@ -23,9 +17,15 @@ def auth_card(card_id):
         return True
     return False
 
+def open_door():
+  with Popen(["./open-door"]) as proc:
+    proc.wait()
+    return proc.returncode == 0
+
 with Popen([reader_daemon], stdout=PIPE) as proc:
   for line in iter(proc.stdout.readline, b''):
     match = re.search(card_id_pattern, line.decode('utf-8'))
+    # Extract the card ID from the line
     if match and match.group():
       card_id = match.group()
       if auth_card(card_id):

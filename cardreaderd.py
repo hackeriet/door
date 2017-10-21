@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import os, re, logging
-import urllib.request as request
+import os, re, logging, json
+from urllib.request import Request, urlparse, urlopen
 from urllib.error import HTTPError
 from subprocess import Popen, PIPE
+from base64 import b64encode
 
 logging.basicConfig(level="DEBUG")
 log = logging.getLogger(__name__)
@@ -20,16 +21,34 @@ authorized_cards = []
 
 def reload_cards():
   try:
-    with request.urlopen(authorized_cards_url) as req:
-      log.info("Got some new card data")
-      lines = req.read().decode('utf-8').split("\n")
-      if len(lines) < 1:
-        log.error("Got less than 1 line of data. Keeping old list.")
+    # Strip away auth part of URL since openurl interprets everything after ':' as a port number
+    parsed = urlparse(authorized_cards_url)
+
+    # Rebuild URL without auth
+    url = str.format("{0}://{1}/{2}", parsed.scheme, parsed.hostname, parsed.path)
+    request = Request(url)
+
+    # Add auth part again manually
+    auth_bytes = b64encode(bytes(parsed.username + ":" + parsed.password, "ascii"))
+    request.add_header("Authorization", "Basic " + auth_bytes.decode("ascii"))
+
+    log.debug("Downloading new card data")
+    with urlopen(request) as req:
+      data = json.loads(req.read().decode("utf-8"))
+      key = "card_number"
+      new_authorized_cards = []
+      for user in data:
+        if key in user and len(user[key]) > 0:
+          new_authorized_cards.append(user[key])
+
+      # In case of auth source server errors don't overwrite old list if no data was found
+      if len(new_authorized_cards) < 1:
+        log.info("No authorized cards was found. Keeping old list.")
         return
 
       old_len = len(authorized_cards)
       authorized_cards.clear()
-      authorized_cards.extend(lines)
+      authorized_cards.extend(new_authorized_cards)
       log.info("Reloaded authorized cards list (before: %d, now: %d)" % (old_len, len(authorized_cards)))
   except HTTPError as e:
     log.error("Request returned error: %s" % e)

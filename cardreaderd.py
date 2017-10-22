@@ -50,8 +50,8 @@ def reload_cards():
       authorized_cards.clear()
       authorized_cards.extend(new_authorized_cards)
       log.info("Reloaded authorized cards list (before: %d, now: %d)" % (old_len, len(authorized_cards)))
-  except HTTPError as e:
-    log.error("Request returned error: %s" % e)
+  except HTTPError as err:
+    log.error("Request returned error: %s" % err)
     log.info("Using existing list. No updates made.")
   except ValueError as err:
     log.error("Invalid URL for authorized cards")

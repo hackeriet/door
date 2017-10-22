@@ -8,8 +8,31 @@ GPIO door lock control
 
 ## Installing
 
-    # apt install wiringpi libnfc libnfc-dev build-essential
-    # curl -sSfo /usr/bin/open-door https://raw.githubusercontent.com/hackeriet/door/master/open-door
+> **IMPORTANT:** This has only been tested on a Raspberry Pi 3 Model B running Raspbian GNU/Linux 9
+
+    # apt install wiringpi libnfc-dev i2c-tools build-essential
+
+### Enable i2c interface
+
+    # echo 'dtparam=i2c_arm=on' >> /boot/config.txt
+
+### Verify that the i2c device is found
+
+    # i2cdetect -y 1
+
+A device address should be shown.
+
+### Configure libnfc
+
+    # echo 'device.connstring = "pn532_i2c:/dev/i2c-1"' > /etc/nfc/libnfc.conf
+
+### Verify device is found by libnfc
+
+    $ nfc-scan-device 
+    nfc-scan-device uses libnfc 1.7.1
+    1 NFC device(s) found:
+    - pn532_i2c:/dev/i2c-1:
+        pn532_i2c:/dev/i2c-1
 
 ## Usage
 

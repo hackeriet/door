@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, re, logging, json
+import os, re, logging, json, sys
 from urllib.request import Request, urlparse, urlopen
 from urllib.error import HTTPError
 from subprocess import Popen, PIPE
@@ -53,8 +53,9 @@ def reload_cards():
   except HTTPError as e:
     log.error("Request returned error: %s" % e)
     log.info("Using existing list. No updates made.")
-  except ValueError:
+  except ValueError as err:
     log.error("Invalid URL for authorized cards")
+    sys.exit(1)
 
 def auth_card(card_id):
   return authorized_cards.count(card_id) > 0

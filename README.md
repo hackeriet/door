@@ -10,7 +10,7 @@ GPIO door lock control
 
 > **IMPORTANT:** This has only been tested on a Raspberry Pi 3 Model B running Raspbian GNU/Linux 9
 
-    # apt install wiringpi libnfc-dev i2c-tools build-essential
+    # apt install wiringpi libnfc5 libnfc-bin libnfc-dev libnfc-examples i2c-tools build-essential
 
 ### Enable i2c interface
 

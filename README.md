@@ -34,6 +34,14 @@ A device address should be shown.
     - pn532_i2c:/dev/i2c-1:
         pn532_i2c:/dev/i2c-1
 
+### Install systemd service file
+
+    # cp doord.service /etc/systemd/system
+
+Change the password in environment variable set in the service file before starting service.
+
+    # systemctl daemon-reload && systemctl enable doord.service && systemctl start doord.service
+
 ## Usage
 
 Configurable environment variables and their defaults:
@@ -64,6 +72,12 @@ Using a static IP as there seems to be some problems with hostname resolution at
 > **NOTE** Up to date information about this functionality can be found in https://github.com/hackeriet/door-remote
 
 https://door-remote.hackeriet.no
+
+## Debugging and Troubleshooting
+
+### Verify daemon is running as it should
+
+    # journalctl -u doord.service -f
 
 ## References
 

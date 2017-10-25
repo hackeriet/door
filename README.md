@@ -59,13 +59,12 @@ $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
 
 ### SSH
 
-Connect with SSH from the local network and use the password stored from hackerpass `infrastructure/entry@humladoor-new.haus.hackeriet.no`.
+Connect with SSH from the local network and use the password stored from hackerpass `infrastructure/hackeriet-door-trigger`.
+The shell of the `entry` user is the `open-door` script. Connect with caution.
 
 ```
-$ ssh entry@10.10.3.15 open-door
+$ ssh entry@10.10.3.15
 ```
-
-Using a static IP as there seems to be some problems with hostname resolution at the moment. The hostname of this system will eventually change anyway.
 
 ### Web interface
 

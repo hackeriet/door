@@ -7,7 +7,13 @@ GPIO door lock control
 - Pins are numbered using the [wiringPi scheme][1]
 - The cardreader is assumed connected with `i2c` on interface #1 (the lowest i2c pin numbers)
 
-## Installing
+## Wiring
+
+Schematics of the circuit can be found in [/schematics](/schematics) which have been
+created with [`gschem`][gschem].
+
+
+## Installation
 
     # apt install wiringpi libnfc5 libnfc-bin libnfc-dev libnfc-examples i2c-tools build-essential
 
@@ -82,7 +88,9 @@ https://door-remote.hackeriet.no
 - [wiringPi wiring scheme][1]
 - [The `gpio` utility][2]
 - [Bash exit traps][3]
+- [Power a 5V relay from GPIO pins](https://raspberrypi.stackexchange.com/questions/27928/power-a-5v-relay-from-gpio-pins#28201)
 
 [1]: https://pinout.xyz/pinout/wiringpi
 [2]: https://projects.drogon.net/raspberry-pi/wiringpi/the-gpio-utility/
 [3]: http://redsymbol.net/articles/bash-exit-traps/
+[gschem]: https://wiki.archlinux.org/index.php/GEDA

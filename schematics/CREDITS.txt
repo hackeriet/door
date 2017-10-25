@@ -1,0 +1,11 @@
+Some symbols used in this project is derived from the following works:
+
+### relay-spdt-1.sym
+
+description: Single polarity dual throw relay 
+author: Amand Tihon amand.tihon@alrj.org 
+dist-license: GPL3, http://www.gnu.org/licenses/gpl-3.0.txt 
+use-license: unrestricted 
+
+http://www.gedasymbols.org/user/amand_tihon/symbols/relay/relay-spdt-1.sym
+

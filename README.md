@@ -2,13 +2,12 @@
 
 GPIO door lock control
 
-- Tested on a Raspberry Pi 1 Model B using Raspbian 9.1
+- Tested on a Pi Zero W running Raspbian GNU/Linux 9
 - The door lock is triggered by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
+- The cardreader is assumed connected with `i2c` on interface #1 (the lowest i2c pin numbers)
 
 ## Installing
-
-> **IMPORTANT:** This has only been tested on a Raspberry Pi 3 Model B running Raspbian GNU/Linux 9
 
     # apt install wiringpi libnfc5 libnfc-bin libnfc-dev libnfc-examples i2c-tools build-essential
 

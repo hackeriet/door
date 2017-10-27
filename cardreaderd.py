@@ -43,25 +43,28 @@ def reload_cards():
         log.error('Failed to deserialize JSON string')
       
       key = "card_number"
-      new_authorized_cards = []
+      tmp = []
       for user in data:
         if key in user and len(user[key]) > 0:
-          new_authorized_cards.append(user[key])
+          tmp.append(user[key])
 
-      # In case of auth source server errors don't overwrite old list if no data was found
-      if len(new_authorized_cards) < 1:
-        log.info("No authorized cards was found. Keeping old list.")
+      # In case of auth source server errors, don't overwrite old list if no data was found
+      if len(tmp) == 0:
+        log.debug("Downloaded list contained 0 cards. Keeping existing list.")
         return
 
+      # Update list of cards
       old_len = len(authorized_cards)
       authorized_cards.clear()
-      authorized_cards.extend(new_authorized_cards)
+      authorized_cards.extend(tmp)
       log.info("Reloaded authorized cards list (before: %d, now: %d)" % (old_len, len(authorized_cards)))
+      log.debug(authorized_cards)
   except HTTPError as err:
-    log.error("Request returned error: %s" % err)
+    log.error("Failed to download new card data: %s" % err)
     log.info("Using existing list. No updates made.")
   except ValueError as err:
     log.error("Invalid URL for authorized cards")
+    # Exit with failure
     sys.exit(1)
   except Exception as err:
     log.error("Failed to download new card data.")

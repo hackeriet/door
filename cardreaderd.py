@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, re, logging, json, sys
+import os, re, logging, json, sys, traceback
 from urllib.request import Request, urlparse, urlopen
 from urllib.error import HTTPError
 from subprocess import Popen, PIPE
@@ -56,6 +56,9 @@ def reload_cards():
   except ValueError as err:
     log.error("Invalid URL for authorized cards")
     sys.exit(1)
+  except Exception as err:
+    log.error("Failed to download new card data.")
+    log.error(traceback.format_exc())
 
 def auth_card(card_id):
   return authorized_cards.count(card_id) > 0

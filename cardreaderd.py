@@ -11,6 +11,7 @@ log = syslogger.getLogger()
 authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
 reader_daemon = "./barbatos/barbatos"
 
+# Allow a mock cardreader implementation
 testing = os.getenv("TESTING", False)
 if testing:
   reader_daemon = "./test/reader-daemon"
@@ -34,7 +35,13 @@ def reload_cards():
 
     log.debug("Downloading new card data")
     with urlopen(request) as req:
-      data = json.loads(req.read().decode("utf-8"))
+      log.debug("Request successful")
+      data = b''
+      try:
+        data = json.loads(req.read().decode("utf-8"))
+      except json.decoder.JSONDecodeError as e:
+        log.error('Failed to deserialize JSON string')
+      
       key = "card_number"
       new_authorized_cards = []
       for user in data:

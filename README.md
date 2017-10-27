@@ -89,6 +89,7 @@ https://door-remote.hackeriet.no
 - [The `gpio` utility][2]
 - [Bash exit traps][3]
 - [Power a 5V relay from GPIO pins](https://raspberrypi.stackexchange.com/questions/27928/power-a-5v-relay-from-gpio-pins#28201)
+- [Logging in Systemd](https://www.loggly.com/blog/logging-in-new-style-daemons-with-systemd/)
 
 [1]: https://pinout.xyz/pinout/wiringpi
 [2]: https://projects.drogon.net/raspberry-pi/wiringpi/the-gpio-utility/

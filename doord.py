@@ -9,14 +9,7 @@ import syslogger
 log = syslogger.getLogger()
 
 authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
-reader_daemon = "./nfcreader/nfcreader"
-
-# Allow a mock cardreader implementation
-testing = os.getenv("TESTING", False)
-if testing:
-  reader_daemon = "./test/reader-daemon"
-  authorized_cards_url = "file:///" + os.getcwd() + "/test/card_ids.txt"
-
+reader_daemon = os.getenv("READER_DAEMON", "./nfcreader/nfcreader")
 card_id_pattern = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 authorized_cards = []
 
@@ -82,6 +75,10 @@ def open_door():
     return proc.returncode == 0
 
 if __name__ == "__main__":
+  if not authorized_cards_url:
+    log.error("Missing URL for authorized cards")
+    sys.exit(1)
+
   reload_cards()
 
   # Open stream in line buffered text mode

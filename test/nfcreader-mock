@@ -5,8 +5,6 @@ card() {
   sleep 2
 }
 
-2>&1 echo 'Starting to echo bogus card reads'
-sleep 1
 card 0x21
 card 0x42
 card 0x1337

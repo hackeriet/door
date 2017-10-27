@@ -2,13 +2,18 @@
 
 GPIO door lock control
 
-- Tested on a Raspberry Pi 1 Model B using Raspbian 9.1
+- Tested on a Pi Zero W running Raspbian GNU/Linux 9
 - The door lock is triggered by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
+- The cardreader is assumed connected with `i2c` on interface #1 (the lowest i2c pin numbers)
 
-## Installing
+## Wiring
 
-> **IMPORTANT:** This has only been tested on a Raspberry Pi 3 Model B running Raspbian GNU/Linux 9
+Schematics of the circuit can be found in [/schematics](/schematics) which have been
+created with [`gschem`][gschem].
+
+
+## Installation
 
     # apt install wiringpi libnfc5 libnfc-bin libnfc-dev libnfc-examples i2c-tools build-essential
 
@@ -59,13 +64,12 @@ $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
 
 ### SSH
 
-Connect with SSH from the local network and use the password stored from hackerpass `infrastructure/entry@humladoor-new.haus.hackeriet.no`.
+Connect with SSH from the local network and use the password stored from hackerpass `infrastructure/hackeriet-door-trigger`.
+The shell of the `entry` user is the `open-door` script. Connect with caution.
 
 ```
-$ ssh entry@10.10.3.15 open-door
+$ ssh entry@10.10.3.15
 ```
-
-Using a static IP as there seems to be some problems with hostname resolution at the moment. The hostname of this system will eventually change anyway.
 
 ### Web interface
 
@@ -84,7 +88,10 @@ https://door-remote.hackeriet.no
 - [wiringPi wiring scheme][1]
 - [The `gpio` utility][2]
 - [Bash exit traps][3]
+- [Power a 5V relay from GPIO pins](https://raspberrypi.stackexchange.com/questions/27928/power-a-5v-relay-from-gpio-pins#28201)
+- [Logging in Systemd](https://www.loggly.com/blog/logging-in-new-style-daemons-with-systemd/)
 
 [1]: https://pinout.xyz/pinout/wiringpi
 [2]: https://projects.drogon.net/raspberry-pi/wiringpi/the-gpio-utility/
 [3]: http://redsymbol.net/articles/bash-exit-traps/
+[gschem]: https://wiki.archlinux.org/index.php/GEDA

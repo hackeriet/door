@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import os, re, logging, json, sys, traceback
+import os, re, json, sys, traceback
 from urllib.request import Request, urlparse, urlopen
 from urllib.error import HTTPError
 from subprocess import Popen, PIPE
 from base64 import b64encode
+import syslogger
 
-logging.basicConfig(level="DEBUG")
-log = logging.getLogger(__name__)
+log = syslogger.getLogger()
 
 authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
 reader_daemon = "./barbatos/barbatos"

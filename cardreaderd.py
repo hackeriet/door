@@ -83,12 +83,15 @@ def open_door():
 
 if __name__ == "__main__":
   reload_cards()
-  log.debug(authorized_cards)
-  with Popen([reader_daemon], stdout=PIPE) as proc:
-    for line in iter(proc.stdout.readline, b""):
-      search = re.search(card_id_pattern, line.decode("utf-8"))
+
+  # Open stream in line buffered text mode
+  with Popen([reader_daemon], stdout=PIPE, bufsize=1, universal_newlines=True) as proc:
+    # TODO: pending rename
+    for line in iter(proc.stdout.readline, ''):
+      log.debug('barbatos:', line)
+      search = re.search(card_id_pattern, line)
       if search is None:
-        log.debug("No card id matched in: %s" % line.decode("utf-8"))
+        log.debug("No card id matched in: %s" % line)
         continue
 
       card_id = search.group(1)

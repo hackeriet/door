@@ -1,6 +1,8 @@
 /*
 Looping NFC/RFID daemon.
 
+Mostly based on example snippets from libnfc.
+
 Author: Lasse Karstensen <lasse.karstensen@gmail.com>, October 2017
 
 Background information:
@@ -30,31 +32,6 @@ void shutdown(int foo) {
   keep_running = false;
 }
 
-/*
-int
-CardTransmit(nfc_device *pnd, uint8_t * capdu, size_t capdulen, uint8_t * rapdu, size_t * rapdulen)
-{
-  int res;
-  size_t  szPos;
-  printf("=> ");
-  for (szPos = 0; szPos < capdulen; szPos++) {
-    printf("%02x ", capdu[szPos]);
-  }
-  printf("\n");
-  if ((res = nfc_initiator_transceive_bytes(pnd, capdu, capdulen, rapdu, *rapdulen, 500)) < 0) {
-    return -1;
-  } else {
-    *rapdulen = (size_t) res;
-    printf("<= ");
-    for (szPos = 0; szPos < *rapdulen; szPos++) {
-      printf("%02x ", rapdu[szPos]);
-    }
-    printf("\n");
-    return 0;
-  }
-}
-*/
-
 int main(int argc, const char *argv[]) {
   nfc_device *pnd;
   nfc_target nt;
@@ -74,7 +51,7 @@ int main(int argc, const char *argv[]) {
   pnd = nfc_open(context, NULL);
 
   if (pnd == NULL) {
-    printf("ERROR: %s\n", "Unable to open NFC device.");
+    printf("ERROR: %s\n", "Unable to open any NFC devices.");
     exit(EXIT_FAILURE);
   }
 
@@ -96,7 +73,9 @@ int main(int argc, const char *argv[]) {
   while (keep_running) {
     debug_print("%s\n", "# polling ...");
 
-    res = nfc_initiator_poll_target(pnd, nmMifare, szModulations, pollnr, period, &nt);
+    res = nfc_initiator_poll_target(pnd, nmMifare, szModulations, pollnr,
+                                    period, &nt);
+
     if (res == NFC_ETIMEOUT || res == NFC_ECHIP) {
       debug_print("%s\n", "# no card found.");
       continue;
@@ -122,7 +101,7 @@ int main(int argc, const char *argv[]) {
       // nfc_perror(pnd, "nfc_initiator_target_is_present");
       debug_print("%s\n", "# card has been removed.");
     }
-  } // while
+  } // while (keep_running)
   nfc_close(pnd);
   nfc_exit(context);
 

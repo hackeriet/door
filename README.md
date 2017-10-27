@@ -83,6 +83,10 @@ https://door-remote.hackeriet.no
 
     # journalctl -u doord.service -f
 
+## Thanks to
+
+- jonnor, Mathsterk @trygvis from #bitraf @ chat.freenode.org for wiring advice
+
 ## References
 
 - [wiringPi wiring scheme][1]

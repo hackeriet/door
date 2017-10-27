@@ -3,13 +3,6 @@ Looping NFC/RFID daemon.
 
 Author: Lasse Karstensen <lasse.karstensen@gmail.com>, October 2017
 
-In demonology, Barbatos is an earl and duke of Hell, ruling thirty legions of
-demons and has four kings as his companions to command his legions. He can
-speak to animals, can tell the future, conciliates friends and rulers, and can
-lead men to treasure hidden by the enchantment of magicians.
-
-(from https://en.wikipedia.org/wiki/Barbatos )
-
 Background information:
 * https://learn.adafruit.com/adafruit-pn532-rfid-nfc/mifare
 

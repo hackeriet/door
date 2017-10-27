@@ -9,7 +9,7 @@ import syslogger
 log = syslogger.getLogger()
 
 authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
-reader_daemon = "./barbatos/barbatos"
+reader_daemon = "./nfcreader/nfcreader"
 
 # Allow a mock cardreader implementation
 testing = os.getenv("TESTING", False)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
   with Popen([reader_daemon], stdout=PIPE, bufsize=1, universal_newlines=True) as proc:
     # TODO: pending rename
     for line in iter(proc.stdout.readline, ''):
-      log.debug('barbatos:', line)
+      log.debug('nfcreader:', line)
       search = re.search(card_id_pattern, line)
       if search is None:
         log.debug("No card id matched in: %s" % line)

@@ -10,6 +10,7 @@ log = syslogger.getLogger()
 
 authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
 reader_daemon = os.getenv("READER_DAEMON", "./nfcreader/nfcreader")
+open_door_script = os.getenv("OPEN_DOOR_SCRIPT", "./open-door")
 card_id_pattern = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 authorized_cards = []
 
@@ -67,7 +68,7 @@ def auth_card(card_id):
   return authorized_cards.count(card_id) > 0
 
 def open_door():
-  with Popen(["./open-door"]) as proc:
+  with Popen([open_door_script]) as proc:
     try:
       proc.wait(timeout=10)
     except TimeoutExpired:

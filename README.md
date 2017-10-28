@@ -68,6 +68,11 @@ $ ssh entry@10.10.3.15
 
 https://door-remote.hackeriet.no
 
+## Developing
+
+See [/test/run-test.sh](/test/run-test.sh) to see how to use mocks in `doord.py`.
+The test script currently has to be run from the project root to get correct paths.
+
 ## Debugging and Troubleshooting
 
 ### Things to check

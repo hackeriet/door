@@ -16,46 +16,35 @@ created with [`gschem`][gschem].
 
 ## Installation
 
-    # apt install wiringpi libnfc5 libnfc-bin libnfc-dev libnfc-examples i2c-tools build-essential
+Install dependencies
 
-### Enable i2c interface
+    # apt install wiringpi libnfc5 libnfc-dev build-essential
+
+Enable i2c interface
 
     # echo 'dtparam=i2c_arm=on' >> /boot/config.txt
 
-### Verify that the i2c device is found
-
-    # i2cdetect -y 1
-
-A device address should be shown.
-
-### Configure libnfc
+Specify where the NFC device can be found by libnfc
 
     # echo 'device.connstring = "pn532_i2c:/dev/i2c-1"' > /etc/nfc/libnfc.conf
 
-### Verify device is found by libnfc
-
-    $ nfc-scan-device 
-    nfc-scan-device uses libnfc 1.7.1
-    1 NFC device(s) found:
-    - pn532_i2c:/dev/i2c-1:
-        pn532_i2c:/dev/i2c-1
-
-### Install systemd service file
+Copy systemd service file to system folder
 
     # cp doord.service /etc/systemd/system
 
-Change the password in environment variable set in the service file before starting service.
+Set password to upstream card list in environment variable
+
+    # vim /etc/systemd/system/doord.service
+
+Reload, enable and start the service
 
     # systemctl daemon-reload && systemctl enable doord.service && systemctl start doord.service
 
+Reboot!
+
 ## Usage
 
-Configurable environment variables and their defaults:
-
-  - `GPIO_PIN_DOOR=0` GPIO pin to trigger door lock
-  - `STAY_UNLOCKED_SEC=2` How long should the pin be kept high
-
-Trigger the door lock
+Trigger door lock
 
 ```
 $ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
@@ -79,6 +68,15 @@ $ ssh entry@10.10.3.15
 https://door-remote.hackeriet.no
 
 ## Debugging and Troubleshooting
+
+### Random things to check
+
+- Make sure wiring is correct. Easy to mix up CLOCK and DATA wires when connecting the i2c device.
+
+### Helpful binaries
+
+- To debug the i2c interface, `i2c-tools` contains some nice utils. Specifically `i2cdetect` which dumps all addresses found on the i2c bus (`i2cdetect -y 1` for bus number 1)
+- `libnfc-bin` and `libnfc-examples` contains some libnfc utilities. Specifically `nfc-poll` and `nfc-scan-devices` are helpful in detecting a correctly connected nfc device
 
 ### Verify daemon is running as it should
 

@@ -23,9 +23,10 @@ def reload_cards():
     url = str.format("{0}://{1}/{2}", parsed.scheme, parsed.hostname, parsed.path)
     request = Request(url)
 
-    # Add auth part again manually
-    auth_bytes = b64encode(bytes(parsed.username + ":" + parsed.password, "ascii"))
-    request.add_header("Authorization", "Basic " + auth_bytes.decode("ascii"))
+    # Add auth part again manually if it's present
+    if parsed.username and parsed.password:
+      auth_bytes = b64encode(bytes(parsed.username + ":" + parsed.password, "ascii"))
+      request.add_header("Authorization", "Basic " + auth_bytes.decode("ascii"))
 
     log.debug("Downloading new card data")
     with urlopen(request) as req:

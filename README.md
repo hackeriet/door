@@ -70,9 +70,11 @@ https://door-remote.hackeriet.no
 
 ## Debugging and Troubleshooting
 
-### Random things to check
+### Things to check
 
 - Make sure wiring is correct. Easy to mix up CLOCK and DATA wires when connecting the I²C device.
+- Measure output voltage on the 5V rail. If it's below 5 volts, the card readers may malfunction.
+- Make sure the power rating of the power supply is as high as expected (see first section of this document)
 
 ### Helpful binaries
 

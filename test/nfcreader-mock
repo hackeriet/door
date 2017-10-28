@@ -2,11 +2,12 @@
 
 card() {
   echo "Card read: $1"
-  sleep 2
+  sleep 1
 }
 
+>&2 echo '# Running test with 4 different card IDs'
 card 0x21
 card 0x42
 card 0x1337
 card 0xbeef
-2>&1 echo 'Done!'
+>&2 echo '# Done!'

@@ -1,0 +1,2 @@
+#!/bin/bash
+/usr/bin/echo '# door triggered in mock door script'

@@ -21,6 +21,11 @@ Install dependencies
 
     # apt install wiringpi libnfc5 libnfc-dev build-essential
 
+Build `nfcreader`
+
+    $ cd nfcreader
+    $ make
+
 Enable I²C interface
 
     # echo 'dtparam=i2c_arm=on' >> /boot/config.txt

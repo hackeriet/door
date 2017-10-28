@@ -4,15 +4,16 @@ GPIO door lock control
 
 - Tested on a Pi Zero W running Raspbian GNU/Linux 9
 - The Pi should be powered with an adapter rated between 5.1V - 5.2V, 2.5A
+- The card readers tested are of the type PN532
 - The door lock is triggered by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
 - The cardreader is assumed connected with I²C on interface #1 (the lowest I²C pin numbers)
+- Authorized card numbers are downloaded from hackerhula
 
 ## Wiring
 
 Schematics of the circuit can be found in [/schematics](/schematics) which have been
 created with [`gschem`][gschem].
-
 
 ## Installation
 

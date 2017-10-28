@@ -6,7 +6,7 @@ GPIO door lock control
 - The Pi should be powered with an adapter rated between 5.1V - 5.2V, 2.5A
 - The door lock is triggered by raising a single GPIO pin
 - Pins are numbered using the [wiringPi scheme][1]
-- The cardreader is assumed connected with `i2c` on interface #1 (the lowest i2c pin numbers)
+- The cardreader is assumed connected with I²C on interface #1 (the lowest I²C pin numbers)
 
 ## Wiring
 
@@ -20,7 +20,7 @@ Install dependencies
 
     # apt install wiringpi libnfc5 libnfc-dev build-essential
 
-Enable i2c interface
+Enable I²C interface
 
     # echo 'dtparam=i2c_arm=on' >> /boot/config.txt
 
@@ -71,11 +71,11 @@ https://door-remote.hackeriet.no
 
 ### Random things to check
 
-- Make sure wiring is correct. Easy to mix up CLOCK and DATA wires when connecting the i2c device.
+- Make sure wiring is correct. Easy to mix up CLOCK and DATA wires when connecting the I²C device.
 
 ### Helpful binaries
 
-- To debug the i2c interface, `i2c-tools` contains some nice utils. Specifically `i2cdetect` which dumps all addresses found on the i2c bus (`i2cdetect -y 1` for bus number 1)
+- To debug the I²C interface, `i2c-tools` contains some nice utils. Specifically `i2cdetect` which dumps all addresses found on the I²C bus (`i2cdetect -y 1` for bus number 1)
 - `libnfc-bin` and `libnfc-examples` contains some libnfc utilities. Specifically `nfc-poll` and `nfc-scan-devices` are helpful in detecting a correctly connected nfc device
 
 ### Verify daemon is running as it should

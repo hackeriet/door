@@ -4,6 +4,8 @@ Description=Polls NFC card reader for RFID cards and triggers door lock for auth
 [Service]
 Group=i2c
 Environment=AUTHORIZED_CARDS_URL=https://blade_syncaccounts:CHANGE_ME@hackeriet.no/hula/member/all_members.json
+Environment=GPIO_PIN_DOOR=0
+Environment=STAY_UNLOCKED_SEC=2
 WorkingDirectory=/opt/door
 ExecStart=/opt/door/doord.py
 Restart=always

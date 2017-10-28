@@ -1,5 +1,9 @@
 #!/bin/bash
-set -eux
+set -eu
+
+if [ ${DEBUG:-0} -eq 1 ]; then
+  set -x
+fi
 
 # Pins are numbered after the wiringPi scheme (https://pinout.xyz/pinout/wiringpi)
 GPIO_PIN_DOOR=${GPIO_PIN_DOOR:-0}

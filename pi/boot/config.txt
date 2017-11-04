@@ -1,0 +1,6 @@
+dtparam=audio=off
+dtparam=i2c_arm=on
+max_usb_current=1
+force_turbo=1
+hdmi_blanking=2
+gpu_mem=16

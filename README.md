@@ -64,7 +64,7 @@ Connect with SSH from the local network and use the password stored from hackerp
 The shell of the `entry` user is the `open-door` script. Connect with caution.
 
 ```
-$ ssh entry@10.10.3.15
+$ ssh entry@10.0.20.10
 ```
 
 ### Web interface

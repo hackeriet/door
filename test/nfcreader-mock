@@ -1,13 +1,32 @@
 #!/bin/bash
+# Mimic normal functionality of the nfc card reader daemon by printing both
+# proper and bogus lines to stdout and stderr
+
+delay=0.5
+test_iterations=3
+i=1
 
 card() {
   echo "Card read: $1"
-  sleep 1
+  sleep $delay
 }
 
->&2 echo '# Running test with 4 different card IDs'
-card 0x21
-card 0x42
-card 0x1337
-card 0xbeef
->&2 echo '# Done!'
+bogus() {
+  echo '# no card read'
+  sleep $delay
+}
+
+while ((i<=test_iterations)); do
+
+  >&2 echo "# Running test with 4 different card IDs (run #$i)"
+  card 0x21
+  card 0x42
+  bogus
+  bogus
+  card 0x1337
+  card 0xbeef
+  bogus
+  >&2 echo '# Done!'
+
+  let i++
+done

@@ -1,106 +1,145 @@
-#!/usr/bin/env python3
-import os, re, json, sys, traceback
-from urllib.request import Request, urlparse, urlopen
-from urllib.error import HTTPError
-from subprocess import Popen, PIPE
+import json
+import sys
+import time
+import subprocess
+import io
+import re
+import os
+import threading
+from shutil import which
 from base64 import b64encode
-import syslogger
+from urllib.request import Request, urlopen
 
-log = syslogger.getLogger()
+CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
+CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
+OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")
 
-authorized_cards_url = os.getenv("AUTHORIZED_CARDS_URL", "")
-reader_daemon = os.getenv("READER_DAEMON", "./nfcreader/nfcreader")
-open_door_script = os.getenv("OPEN_DOOR_SCRIPT", "./open-door")
-card_id_pattern = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
-authorized_cards = []
+CARD_DATA_URL = os.getenv("CARD_DATA_URL")
+CARD_DATA_USERNAME = os.getenv("CARD_DATA_USERNAME")
+CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
 
-def reload_cards():
-  try:
-    # Strip away auth part of URL since openurl interprets everything after ':' as a port number
-    parsed = urlparse(authorized_cards_url)
+UPDATE_INTERVAL = 15
+CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
 
-    # Rebuild URL without auth
-    url = str.format("{0}://{1}/{2}", parsed.scheme, parsed.hostname, parsed.path)
-    request = Request(url)
+# TODO: Make this into something nice with logging library
+#DEBUG = bool(os.getenv("DEBUG", False))
+TESTING = bool(os.getenv("TESTING", False))
+if TESTING:
+    CARD_READER_BIN = "./test/nfcreader-mock"
+    OPEN_DOOR_BIN = ["echo", "Door opened!"]
+    CARDS_SAVE_FILE = "/tmp/testfile"
 
-    # Add auth part again manually if it's present
-    if parsed.username and parsed.password:
-      auth_bytes = b64encode(bytes(parsed.username + ":" + parsed.password, "ascii"))
-      request.add_header("Authorization", "Basic " + auth_bytes.decode("ascii"))
 
-    log.debug("Downloading new card data")
-    with urlopen(request) as req:
-      log.debug("Request successful")
-      data = b''
-      try:
-        data = json.loads(req.read().decode("utf-8"))
-      except json.decoder.JSONDecodeError as e:
-        log.error('Failed to deserialize JSON string')
-      
-      key = "card_number"
-      tmp = []
-      for user in data:
-        if key in user and len(user[key]) > 0:
-          tmp.append(user[key])
+class DoorControl:
+    def run(self):
+        # Master list of authorized cards, shared between threads
+        self.authorized_cards = list()
 
-      # In case of auth source server errors, don't overwrite old list if no data was found
-      if len(tmp) == 0:
-        log.debug("Downloaded list contained 0 cards. Keeping existing list.")
-        return
+        # Attempt to start off from last successful download
+        self.load_saved_cards()
 
-      # Update list of cards
-      old_len = len(authorized_cards)
-      authorized_cards.clear()
-      authorized_cards.extend(tmp)
-      log.info("Reloaded authorized cards list (before: %d, now: %d)" % (old_len, len(authorized_cards)))
-      log.debug(authorized_cards)
-  except HTTPError as err:
-    log.error("Failed to download new card data: %s" % err)
-    log.info("Using existing list. No updates made.")
-  except ValueError as err:
-    log.error("Invalid URL for authorized cards")
-    # Exit with failure
-    sys.exit(1)
-  except Exception as err:
-    log.error("Failed to download new card data.")
-    log.error(traceback.format_exc())
+        # Start NFC card reader thread, that also opens the door
+        print("Starting NFC card reader thread")
+        nfc_thread = threading.Thread(target=DoorControl.nfc_reader_worker, args=(self,))
+        nfc_thread.start()
 
-def auth_card(card_id):
-  return authorized_cards.count(card_id) > 0
+        print("Updating list of authorized cards every %d second(s)" % UPDATE_INTERVAL)
 
-def open_door():
-  with Popen([open_door_script]) as proc:
-    try:
-      proc.wait(timeout=10)
-    except TimeoutExpired:
-      log.error('Timeout exceeded while waiting for door to open')
-    return proc.returncode == 0
+        while nfc_thread.is_alive():
+            # Download new cards and update list if necessary
+            try:
+                fresh_cards = self.download_card_data()
+                if len(fresh_cards) > 0 and fresh_cards != self.authorized_cards:
+                    print("Now %d authorized card(s) (was %d)" % (len(fresh_cards), len(self.authorized_cards)))
+                    self.authorized_cards = fresh_cards
+                    # Persist successfully downloaded lists
+                    self.save_cards()
+            except Exception as e:
+                print("Failed to download new card data.", e, file=sys.stderr)
 
-if __name__ == "__main__":
-  if not authorized_cards_url:
-    log.error("Missing URL for authorized cards")
-    sys.exit(1)
+            time.sleep(UPDATE_INTERVAL)
 
-  reload_cards()
+        print("Card reader thread stopped. Exiting!")
 
-  # Open stream in line buffered text mode
-  with Popen([reader_daemon], stdout=PIPE, bufsize=1, universal_newlines=True) as proc:
-    # TODO: pending rename
-    for line in iter(proc.stdout.readline, ''):
-      log.debug('nfcreader: %s' % line)
-      search = re.search(card_id_pattern, line)
-      if search is None:
-        log.debug("No card id matched in: %s" % line)
-        continue
+    def load_saved_cards(self):
+        try:
+            with open(CARDS_SAVE_FILE, "r") as f:
+                deserialized = f.read().strip().split(',')
+                if type(deserialized) is list:
+                    self.authorized_cards = deserialized
+                    print("Successfully loaded last used list of cards (%d cards)" % len(self.authorized_cards))
+                else:
+                    print("File with authorized cards was invalid format. Starting from scratch.", file=sys.stderr)
+        except FileNotFoundError:
+            print("File with authorized cards not found. Starting from scratch.")
 
-      card_id = search.group(1)
-      if not auth_card(card_id):
-        log.error("Unauthorized card %s" % card_id)
-        continue
 
-      log.info("Card %s is authorized" % card_id)
-      if open_door():
-        log.info("Door opened")
-      else:
-        log.error("Failed to open door")
+    def save_cards(self):
+        try:
+            serialized = ','.join(self.authorized_cards)
+            with open(CARDS_SAVE_FILE, "w") as f:
+                f.write(serialized)
+            print("Saved list of authorized cards to file", CARDS_SAVE_FILE)
+        except Exception as e:
+            # TODO: Catch a less generic exception. Just not quite sure if it's necessary to be very defensive here
+            print("An error occured while attempting to save list of cards", e, file=sys.stderr)
+
+
+    def download_card_data(self):
+        # Build an authenticated request
+        req = Request(CARD_DATA_URL)
+        credentials = CARD_DATA_USERNAME + ":" + CARD_DATA_PASSWORD
+        auth_str = b64encode(credentials.encode()).decode("ascii")
+        req.add_header("Authorization", "Basic " + auth_str)
+
+        cards = list()
+
+        with urlopen(req) as res:
+            user_data = json.loads(res.read().decode())
+
+            # Expect an array
+            if type(user_data) is not list:
+                raise ValueError("Invalid data format %s. Expected %s" % (type(user_data), list))
+
+            # Extract card numbers from all users that have a registered card
+            k = "card_number"
+            for user in user_data:
+                if k in user and len(user[k]) > 0:
+                    cards.append(user[k])
+
+        return cards
+
+
+    def nfc_reader_worker(self):
+        with subprocess.Popen(CARD_READER_BIN, bufsize=1, stdout=subprocess.PIPE) as proc:
+            # TODO: When Python 3.6 is supported on target system, use `encoding` kwarg with Popen
+            # TODO: Pretty sure there's a more pythonic way
+            for line in iter(proc.stdout.readline, b''):
+                line = line.decode("utf-8")
+
+                # Match on successful NFC tag reads
+                card_match = CARD_PATTERN.search(line[:-1])
+                if card_match is None:
+                    continue
+
+                # Verify card is authorized
+                card_id = card_match.group(1)
+                if card_id not in self.authorized_cards:
+                    print("Card %s was rejected access: Not authorized" % card_id)
+                    continue
+
+                # Trigger door lock
+                try:
+                    with subprocess.Popen(OPEN_DOOR_BIN) as proc:
+                        proc.wait(timeout=10)
+                        if proc.returncode == 0:
+                            print("Door lock trigger script exited successfully")
+                        else:
+                            print("Door lock trigger script exited uncleanly: %d)" % (proc.returncode), file=sys.stderr)
+                except subprocess.TimeoutExpired:
+                    print("Timed out waiting for lock trigger script to exit", file=sys.stderr)
+
+
+if __name__ == '__main__':
+    DoorControl().run()
 

@@ -55,7 +55,7 @@ class DoorControl:
                     # Persist successfully downloaded lists
                     self.save_cards()
             except Exception as e:
-                print("Failed to download new card data", e, file=sys.stderr)
+                print("Failed to download new card data.", e, file=sys.stderr)
 
             time.sleep(UPDATE_INTERVAL)
 
@@ -111,8 +111,12 @@ class DoorControl:
 
 
     def nfc_reader_worker(self):
-        with subprocess.Popen(CARD_READER_BIN, encoding="utf-8", bufsize=1, stdout=subprocess.PIPE) as proc:
-            for line in iter(proc.stdout.readline, ''):
+        with subprocess.Popen(CARD_READER_BIN, bufsize=1, stdout=subprocess.PIPE) as proc:
+            # TODO: When Python 3.6 is supported on target system, use `encoding` kwarg with Popen
+            # TODO: Pretty sure there's a more pythonic way
+            for line in iter(proc.stdout.readline, b''):
+                line = line.decode("utf-8")
+
                 # Match on successful NFC tag reads
                 card_match = CARD_PATTERN.search(line[:-1])
                 if card_match is None:

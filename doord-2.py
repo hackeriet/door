@@ -4,18 +4,31 @@ import time
 import subprocess
 import io
 import re
+import os
 import threading
+from shutil import which
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
-CARD_DATA_URL = "https://hackeriet.no/hula/member/all_members.json"
 CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
-CARD_READER_BIN = ["./test/nfcreader-mock"]
-OPEN_DOOR_BIN = ["echo", "Door opened!"]
-USERNAME = ""
-PASSWORD = ""
+CARD_READER_BIN = "./nfcreader/nfcreader"
+OPEN_DOOR_BIN = "./open-door"
+
+CARD_DATA_URL = "https://hackeriet.no/hula/member/all_members.json"
+CARD_DATA_USERNAME = ""
+CARD_DATA_PASSWORD = ""
+
 UPDATE_INTERVAL = 15
-CARDS_SAVE_FILE = "/tmp/testfile"
+CARDS_SAVE_FILE = "./.card_data"
+
+# TODO: Make this into something nice with logging library
+#DEBUG = bool(os.getenv("DEBUG", False))
+TESTING = bool(os.getenv("TESTING", False))
+if TESTING:
+    CARD_READER_BIN = "./test/nfcreader-mock"
+    OPEN_DOOR_BIN = ["echo", "Door opened!"]
+    CARDS_SAVE_FILE = "/tmp/testfile"
+
 
 class DoorControl:
     def run(self):
@@ -75,7 +88,7 @@ class DoorControl:
     def download_card_data(self):
         # Build an authenticated request
         req = Request(CARD_DATA_URL)
-        credentials = USERNAME + ":" + PASSWORD
+        credentials = CARD_DATA_USERNAME + ":" + CARD_DATA_PASSWORD
         auth_str = b64encode(credentials.encode()).decode("ascii")
         req.add_header("Authorization", "Basic " + auth_str)
 

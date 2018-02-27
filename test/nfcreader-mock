@@ -31,5 +31,5 @@ while ((i<=test_iterations)); do
   let i++
 done
 
->&2 echo "# Completed $i test run(s). Exiting (1)."
+>&2 echo "# Completed $test_iterations test run(s). Exiting with code 1."
 exit 1

@@ -1,0 +1,8 @@
+#!/bin/bash
+set -ax
+DEBUG=1
+CARD_READER_BIN="./nfcreader-mock"
+CARD_DATA_URL=""
+CARDS_SAVE_FILE="/tmp/door_card_data"
+OPEN_DOOR_BIN="./open-door-mock"
+python3 ../doord-2.py

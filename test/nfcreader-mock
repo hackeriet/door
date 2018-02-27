@@ -30,3 +30,6 @@ while ((i<=test_iterations)); do
 
   let i++
 done
+
+>&2 echo "# Completed $i test run(s). Exiting (1)."
+exit 1

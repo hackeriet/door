@@ -11,15 +11,15 @@ from base64 import b64encode
 from urllib.request import Request, urlopen
 
 CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
-CARD_READER_BIN = "./nfcreader/nfcreader"
-OPEN_DOOR_BIN = "./open-door"
+CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
+OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")
 
-CARD_DATA_URL = "https://hackeriet.no/hula/member/all_members.json"
-CARD_DATA_USERNAME = ""
-CARD_DATA_PASSWORD = ""
+CARD_DATA_URL = os.getenv("CARD_DATA_URL")
+CARD_DATA_USERNAME = os.getenv("CARD_DATA_USERNAME")
+CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
 
 UPDATE_INTERVAL = 15
-CARDS_SAVE_FILE = "./.card_data"
+CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
 
 # TODO: Make this into something nice with logging library
 #DEBUG = bool(os.getenv("DEBUG", False))

@@ -11,7 +11,8 @@ RestartSec=5
 Environment=GPIO_PIN_DOOR=0
 Environment=STAY_UNLOCKED_SEC=2
 Environment=CARD_DATA_URL=https://hackeriet.no/hula/member/all_members.json
-Environment=CARD_DATA_USERNAME="" CARD_DATA_PASSWORD=""
+Environment=CARD_DATA_USERNAME=
+Environment=CARD_DATA_PASSWORD=
 Environment=DEBUG=1
 
 [Install]

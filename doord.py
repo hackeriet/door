@@ -2,11 +2,9 @@ import json
 import sys
 import time
 import subprocess
-import io
 import re
 import os
 import threading
-from shutil import which
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
@@ -31,10 +29,11 @@ if TESTING:
 
 
 class DoorControl:
-    def run(self):
+    def __init__(self):
         # Master list of authorized cards, shared between threads
         self.authorized_cards = list()
 
+    def run(self):
         # Attempt to start off from last successful download
         self.load_saved_cards()
 
@@ -142,4 +141,3 @@ class DoorControl:
 
 if __name__ == '__main__':
     DoorControl().run()
-

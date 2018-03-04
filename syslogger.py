@@ -1,39 +1,42 @@
 import logging
 
 SYSLOG_LEVELS = {
-  logging.DEBUG: 7,
-  logging.INFO: 6,
-  logging.WARNING: 4,
-  logging.ERROR: 3,
-  logging.CRITICAL: 2,
-  logging.FATAL: 1
+    logging.DEBUG: 7,
+    logging.INFO: 6,
+    logging.WARNING: 4,
+    logging.ERROR: 3,
+    logging.CRITICAL: 2,
+    logging.FATAL: 1
 }
 
 class SyslogFilter(logging.Filter):
-  """
-  This filter adds a key containing the syslog level corresponding with the python log level
-  """
-  def filter(self, record):
-    record.sysloglevel = SYSLOG_LEVELS[record.levelno]
-    return True
+    """
+    This filter prepends the syslog level corresponding with the python log level
+    to all log messages
+    """
+    def filter(self, record):
+        record.sysloglevel = SYSLOG_LEVELS[record.levelno]
+        return True
 
-def getLogger(logger=None):
-  """
-  Traditional python logging logger with prefixed log level number to use with syslog or systemd journal
-  """
-  # Use passed in logger or create a default one
-  if logger is None:
-    logger = logging.getLogger(__name__)
 
-  syslog_filter = SyslogFilter()
-  logger.addFilter(syslog_filter)
+class Syslogger(logging.Logger):
+    def __init__(self, name=__name__):
+        super().__init__(name)
 
-  syslogFormat = logging.Formatter('<%(sysloglevel)d> %(message)s')
-  handler = logging.StreamHandler()
-  handler.setFormatter(syslogFormat)
+        log_handler = logging.StreamHandler()
+        log_handler.setLevel(logging.NOTSET)
+        log_formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
+        log_handler.setFormatter(log_formatter)
+        self.addHandler(log_handler)
 
-  logger.addHandler(handler)
-  # Send everything to syslog and leave filtering to other programs (e.g. journalctl -p <level>)
-  logger.setLevel(logging.DEBUG)
-  return logger
+        log_filter = SyslogFilter()
+        self.addFilter(log_filter)
 
+        # Send everything to syslog and leave filtering to other programs (e.g. journalctl -p <level>)
+        self.setLevel(logging.NOTSET)
+
+
+if __name__ == '__main__':
+    logger = Syslogger('TestLogger')
+    for levelname in SYSLOG_LEVELS.keys():
+        print(levelname)

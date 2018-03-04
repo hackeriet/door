@@ -5,6 +5,7 @@ import subprocess
 import re
 import os
 import threading
+from syslogger import Syslogger
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
@@ -27,6 +28,7 @@ if TESTING:
     OPEN_DOOR_BIN = ["echo", "Door opened!"]
     CARDS_SAVE_FILE = "/tmp/testfile"
 
+logger = Syslogger()
 
 class DoorControl:
     def __init__(self):
@@ -38,27 +40,28 @@ class DoorControl:
         self.load_saved_cards()
 
         # Start NFC card reader thread, that also opens the door
-        print("Starting NFC card reader thread")
+        logger.info("Starting NFC card reader thread")
         nfc_thread = threading.Thread(target=DoorControl.nfc_reader_worker, args=(self,))
         nfc_thread.start()
 
-        print("Updating list of authorized cards every %d second(s)" % UPDATE_INTERVAL)
+        logger.info("Updating list of authorized cards every %d second(s)", UPDATE_INTERVAL)
 
         while nfc_thread.is_alive():
             # Download new cards and update list if necessary
             try:
                 fresh_cards = self.download_card_data()
                 if len(fresh_cards) > 0 and fresh_cards != self.authorized_cards:
-                    print("Now %d authorized card(s) (was %d)" % (len(fresh_cards), len(self.authorized_cards)))
+                    logger.info("Now there are %d authorized card(s) (was %d)", len(fresh_cards), len(self.authorized_cards))
                     self.authorized_cards = fresh_cards
                     # Persist successfully downloaded lists
                     self.save_cards()
             except Exception as e:
-                print("Failed to download new card data.", e, file=sys.stderr)
+                logger.error("Failed to download new card data: %s", e)
 
             time.sleep(UPDATE_INTERVAL)
 
-        print("Card reader thread stopped. Exiting!")
+        logger.warning("Card reader thread stopped. Exiting!")
+
 
     def load_saved_cards(self):
         try:
@@ -66,11 +69,11 @@ class DoorControl:
                 deserialized = f.read().strip().split(',')
                 if type(deserialized) is list:
                     self.authorized_cards = deserialized
-                    print("Successfully loaded last used list of cards (%d cards)" % len(self.authorized_cards))
+                    logger.info("Successfully loaded last used list of cards (%d cards)", len(self.authorized_cards))
                 else:
-                    print("File with authorized cards was invalid format. Starting from scratch.", file=sys.stderr)
+                    logger.error("File with authorized cards was invalid format. Starting from scratch.")
         except FileNotFoundError:
-            print("File with authorized cards not found. Starting from scratch.")
+            logger.info("File with authorized cards not found. Starting from scratch.")
 
 
     def save_cards(self):
@@ -78,10 +81,10 @@ class DoorControl:
             serialized = ','.join(self.authorized_cards)
             with open(CARDS_SAVE_FILE, "w") as f:
                 f.write(serialized)
-            print("Saved list of authorized cards to file", CARDS_SAVE_FILE)
+            logger.info("Saved list of authorized cards to file", CARDS_SAVE_FILE)
         except Exception as e:
             # TODO: Catch a less generic exception. Just not quite sure if it's necessary to be very defensive here
-            print("An error occured while attempting to save list of cards", e, file=sys.stderr)
+            logger.error("An error occured while attempting to save list of cards: %s", e)
 
 
     def download_card_data(self):
@@ -98,7 +101,7 @@ class DoorControl:
 
             # Expect an array
             if type(user_data) is not list:
-                raise ValueError("Invalid data format %s. Expected %s" % (type(user_data), list))
+                raise ValueError("Invalid data format %s. Expected %s", type(user_data), list)
 
             # Extract card numbers from all users that have a registered card
             k = "card_number"
@@ -119,24 +122,29 @@ class DoorControl:
                 # Match on successful NFC tag reads
                 card_match = CARD_PATTERN.search(line[:-1])
                 if card_match is None:
+                    logger.debug("card_id regex pattern did not match: '%s'", line[:-1])
                     continue
 
                 # Verify card is authorized
                 card_id = card_match.group(1)
                 if card_id not in self.authorized_cards:
-                    print("Card %s was rejected access: Not authorized" % card_id)
+                    logger.warning("Card NOT authorized: %s", card_id)
                     continue
+
+                logger.info("Card authorized: %s", card_id)
 
                 # Trigger door lock
                 try:
                     with subprocess.Popen(OPEN_DOOR_BIN) as proc:
                         proc.wait(timeout=10)
                         if proc.returncode == 0:
-                            print("Door lock trigger script exited successfully")
+                            logger.info("Door lock trigger script exited successfully")
                         else:
-                            print("Door lock trigger script exited uncleanly: %d)" % (proc.returncode), file=sys.stderr)
+                            logger.error("Door lock trigger script exited uncleanly: %d)", proc.returncode)
+                            (stdout, stderr) = proc.communicate()
+                            logger.debug(stderr)
                 except subprocess.TimeoutExpired:
-                    print("Timed out waiting for lock trigger script to exit", file=sys.stderr)
+                    logger.error("Timed out waiting for lock trigger script to exit")
 
 
 if __name__ == '__main__':

@@ -46,16 +46,24 @@ class DoorControl:
 
         logger.info("Updating list of authorized cards every %d second(s)", UPDATE_INTERVAL)
 
+        last_download_failed = True
+
         while nfc_thread.is_alive():
             # Download new cards and update list if necessary
             try:
                 fresh_cards = self.download_card_data()
+
+                if last_download_failed:
+                    logger.info("Successfully downloaded card data")
+                    last_download_failed = False
+
                 if len(fresh_cards) > 0 and fresh_cards != self.authorized_cards:
                     logger.info("Now there are %d authorized card(s) (was %d)", len(fresh_cards), len(self.authorized_cards))
                     self.authorized_cards = fresh_cards
                     # Persist successfully downloaded lists
                     self.save_cards()
             except Exception as e:
+                last_download_failed = True
                 logger.error("Failed to download new card data: %s", e)
 
             time.sleep(UPDATE_INTERVAL)

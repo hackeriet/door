@@ -74,7 +74,7 @@ class DoorControl:
     def load_saved_cards(self):
         try:
             with open(CARDS_SAVE_FILE, "r") as f:
-                deserialized = f.read().strip().split(',')
+                deserialized = f.read().strip().split(",")
                 if type(deserialized) is list:
                     self.authorized_cards = deserialized
                     logger.info("Successfully loaded last used list of cards (%d cards)", len(self.authorized_cards))
@@ -86,7 +86,7 @@ class DoorControl:
 
     def save_cards(self):
         try:
-            serialized = ','.join(self.authorized_cards)
+            serialized = ",".join(self.authorized_cards)
             with open(CARDS_SAVE_FILE, "w") as f:
                 f.write(serialized)
             logger.info("Saved list of authorized cards to file", CARDS_SAVE_FILE)
@@ -124,7 +124,7 @@ class DoorControl:
         with subprocess.Popen(CARD_READER_BIN, bufsize=1, stdout=subprocess.PIPE) as proc:
             # TODO: When Python 3.6 is supported on target system, use `encoding` kwarg with Popen
             # TODO: Pretty sure there's a more pythonic way
-            for line in iter(proc.stdout.readline, b''):
+            for line in iter(proc.stdout.readline, b""):
                 line = line.decode("utf-8")
 
                 # Match on successful NFC tag reads

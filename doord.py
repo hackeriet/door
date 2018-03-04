@@ -156,5 +156,23 @@ class DoorControl:
                     logger.error("Timed out waiting for lock trigger script to exit")
 
 
-if __name__ == '__main__':
-    DoorControl().run()
+def main(argv):
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--card_ids", type=str, help="Comma-separated list of authorized cards (for testing)")
+    options = parser.parse_args(args=argv)
+
+    door = DoorControl()
+
+    # Use a list of pre-authorized cards, valid up until first load/download
+    if options.card_ids:
+        for card_id in options.card_ids.split(","):
+            door.authorized_cards.append(card_id)
+
+    door.authorized_cards.append("0x1337")
+    door.run()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

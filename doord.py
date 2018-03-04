@@ -148,9 +148,10 @@ class DoorControl:
                         if proc.returncode == 0:
                             logger.info("Door lock trigger script exited successfully")
                         else:
-                            logger.error("Door lock trigger script exited uncleanly: %d)", proc.returncode)
+                            logger.error("Door lock trigger script exited uncleanly: %d", proc.returncode)
                             (stdout, stderr) = proc.communicate()
-                            logger.debug(stderr)
+                            logger.error("door stdout: %s", stdout)
+                            logger.error("door stderr: %s", stderr)
                 except subprocess.TimeoutExpired:
                     logger.error("Timed out waiting for lock trigger script to exit")
 

@@ -20,10 +20,10 @@ class SyslogFilter(logging.Filter):
 
 
 class Syslogger(logging.Logger):
-    def __init__(self, name=__name__):
+    def __init__(self, name=__name__, stream=None):
         super().__init__(name)
 
-        log_handler = logging.StreamHandler()
+        log_handler = logging.StreamHandler(stream=stream)
         log_handler.setLevel(logging.NOTSET)
         log_formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
         log_handler.setFormatter(log_formatter)

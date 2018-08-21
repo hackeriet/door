@@ -26,8 +26,8 @@ class SyslogFilter(logging.Filter):
 
 
 class Syslogger(logging.Logger):
-    def __init__(self, name=__name__, stream=None):
-        super().__init__(name)
+    def __init__(self, name=__name__, stream=None, **kwargs):
+        super().__init__(name, **kwargs)
 
         formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
 

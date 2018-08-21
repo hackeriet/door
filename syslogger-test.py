@@ -42,3 +42,9 @@ class SysloggerTestCase(unittest.TestCase):
         logged = self.stream.getvalue()
         self.assertEqual(logged, '<%s> hello\n' % SYSLOG_LEVELS.get(logging.CRITICAL))
 
+    def test_passes_level_kwarg_to_base_logger(self):
+        self.logger = Syslogger(name='test-custom', stream=self.stream, level=logging.CRITICAL)
+        self.logger.info('Hello world!')
+        logged = self.stream.getvalue().strip()
+        self.assertEqual(logged, '')
+

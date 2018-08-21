@@ -89,7 +89,7 @@ class DoorControl:
             serialized = ",".join(self.authorized_cards)
             with open(CARDS_SAVE_FILE, "w") as f:
                 f.write(serialized)
-            logger.info("Saved list of authorized cards to file", CARDS_SAVE_FILE)
+            logger.info("Saved list of authorized cards to file: %s", CARDS_SAVE_FILE)
         except Exception as e:
             # TODO: Catch a less generic exception. Just not quite sure if it's necessary to be very defensive here
             logger.error("An error occured while attempting to save list of cards: %s", e)

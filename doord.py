@@ -5,6 +5,7 @@ import subprocess
 import re
 import os
 import threading
+import logging
 from syslogger import Syslogger
 from base64 import b64encode
 from urllib.request import Request, urlopen
@@ -20,15 +21,18 @@ CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
 UPDATE_INTERVAL = 15
 CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
 
-# TODO: Make this into something nice with logging library
-#DEBUG = bool(os.getenv("DEBUG", False))
+logger = Syslogger(level=logging.INFO)
+
+DEBUG = bool(os.getenv("DEBUG", False))
+if DEBUG:
+    logger.setLevel(logging.DEBUG)
+
 TESTING = bool(os.getenv("TESTING", False))
 if TESTING:
     CARD_READER_BIN = "./test/nfcreader-mock"
     OPEN_DOOR_BIN = ["echo", "Door opened!"]
     CARDS_SAVE_FILE = "/tmp/testfile"
 
-logger = Syslogger()
 
 class DoorControl:
     def __init__(self):

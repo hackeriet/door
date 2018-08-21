@@ -29,20 +29,11 @@ class Syslogger(logging.Logger):
     def __init__(self, name=__name__, stream=None):
         super().__init__(name)
 
-        log_handler = logging.StreamHandler(stream=stream)
-        log_handler.setLevel(logging.NOTSET)
-        log_formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
-        log_handler.setFormatter(log_formatter)
-        self.addHandler(log_handler)
+        formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
 
-        log_filter = SyslogFilter()
-        self.addFilter(log_filter)
+        handler = logging.StreamHandler(stream=stream) # Allow mocking the output stream
+        handler.setFormatter(formatter)
 
-        # Send everything to syslog and leave filtering to other programs (e.g. journalctl -p <level>)
-        self.setLevel(logging.NOTSET)
+        self.addHandler(handler)
+        self.addFilter(SyslogFilter())
 
-
-if __name__ == '__main__':
-    logger = Syslogger('TestLogger')
-    for levelname in SYSLOG_LEVELS.keys():
-        print(levelname)

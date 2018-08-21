@@ -1,3 +1,9 @@
+"""
+This class enables proper syslog level logging to a journald enabled system
+by prefixing all log lines with the syslog level.
+
+See `man systemd.journal-fields` PRIORITY field for a brief description.
+"""
 import logging
 
 SYSLOG_LEVELS = {
@@ -11,8 +17,8 @@ SYSLOG_LEVELS = {
 
 class SyslogFilter(logging.Filter):
     """
-    This filter prepends the syslog level corresponding with the python log level
-    to all log messages
+    Prepends the syslog level corresponding to the python logging log level
+    to all lines
     """
     def filter(self, record):
         record.sysloglevel = SYSLOG_LEVELS[record.levelno]

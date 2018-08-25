@@ -179,7 +179,7 @@ def main(argv):
 
     door = DoorControl()
 
-    print("%s version %s" % (os.path.basename(__file__), VERSION))
+    logger.info("%s version %s" % (os.path.basename(__file__), VERSION))
 
     # Use a list of pre-authorized cards, valid up until first load/download
     if options.card_ids:

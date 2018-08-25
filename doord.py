@@ -171,6 +171,8 @@ def main(argv):
 
     door = DoorControl()
 
+    print("%s version %s" % (__file__, VERSION))
+
     # Use a list of pre-authorized cards, valid up until first load/download
     if options.card_ids:
         for card_id in options.card_ids.split(","):

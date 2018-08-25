@@ -176,7 +176,9 @@ def main(argv):
         for card_id in options.card_ids.split(","):
             door.authorized_cards.append(card_id)
 
-    door.authorized_cards.append("0x1337")
+    if TESTING:
+        door.authorized_cards.append("0x1337")
+
     door.run()
 
 

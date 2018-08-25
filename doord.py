@@ -164,10 +164,18 @@ class DoorControl:
 
 def main(argv):
     import argparse
+    import stat
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--card_ids", type=str, help="Comma-separated list of authorized cards (for testing)")
     options = parser.parse_args(args=argv)
+
+    if not os.path.isfile(CARD_READER_BIN):
+        logger.fatal('File specified as CARD_READER_BIN does not exist: %s', CARD_READER_BIN)
+        sys.exit(1)
+    if not os.stat(CARD_READER_BIN).st_mode & stat.S_IXUSR:
+        logger.fatal('File %s is not executable by user', CARD_READER_BIN)
+        sys.exit(1)
 
     door = DoorControl()
 

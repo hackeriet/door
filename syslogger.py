@@ -1,3 +1,9 @@
+"""
+This class enables proper syslog level logging to a journald enabled system
+by prefixing all log lines with the syslog level.
+
+See `man systemd.journal-fields` PRIORITY field for a brief description.
+"""
 import logging
 
 SYSLOG_LEVELS = {
@@ -11,8 +17,8 @@ SYSLOG_LEVELS = {
 
 class SyslogFilter(logging.Filter):
     """
-    This filter prepends the syslog level corresponding with the python log level
-    to all log messages
+    Prepends the syslog level corresponding to the python logging log level
+    to all lines
     """
     def filter(self, record):
         record.sysloglevel = SYSLOG_LEVELS[record.levelno]
@@ -20,23 +26,14 @@ class SyslogFilter(logging.Filter):
 
 
 class Syslogger(logging.Logger):
-    def __init__(self, name=__name__):
-        super().__init__(name)
+    def __init__(self, name=__name__, stream=None, **kwargs):
+        super().__init__(name, **kwargs)
 
-        log_handler = logging.StreamHandler()
-        log_handler.setLevel(logging.NOTSET)
-        log_formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
-        log_handler.setFormatter(log_formatter)
-        self.addHandler(log_handler)
+        formatter = logging.Formatter('<%(sysloglevel)d> %(message)s')
 
-        log_filter = SyslogFilter()
-        self.addFilter(log_filter)
+        handler = logging.StreamHandler(stream=stream) # Allow mocking the output stream
+        handler.setFormatter(formatter)
 
-        # Send everything to syslog and leave filtering to other programs (e.g. journalctl -p <level>)
-        self.setLevel(logging.NOTSET)
+        self.addHandler(handler)
+        self.addFilter(SyslogFilter())
 
-
-if __name__ == '__main__':
-    logger = Syslogger('TestLogger')
-    for levelname in SYSLOG_LEVELS.keys():
-        print(levelname)

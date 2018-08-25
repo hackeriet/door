@@ -5,9 +5,12 @@ import subprocess
 import re
 import os
 import threading
+import logging
 from syslogger import Syslogger
 from base64 import b64encode
 from urllib.request import Request, urlopen
+
+VERSION = "2.1.0"
 
 CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
@@ -20,15 +23,18 @@ CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
 UPDATE_INTERVAL = 15
 CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
 
-# TODO: Make this into something nice with logging library
-#DEBUG = bool(os.getenv("DEBUG", False))
+logger = Syslogger(level=logging.INFO)
+
+DEBUG = bool(os.getenv("DEBUG", False))
+if DEBUG:
+    logger.setLevel(logging.DEBUG)
+
 TESTING = bool(os.getenv("TESTING", False))
 if TESTING:
     CARD_READER_BIN = "./test/nfcreader-mock"
     OPEN_DOOR_BIN = ["echo", "Door opened!"]
     CARDS_SAVE_FILE = "/tmp/testfile"
 
-logger = Syslogger()
 
 class DoorControl:
     def __init__(self):
@@ -89,7 +95,7 @@ class DoorControl:
             serialized = ",".join(self.authorized_cards)
             with open(CARDS_SAVE_FILE, "w") as f:
                 f.write(serialized)
-            logger.info("Saved list of authorized cards to file", CARDS_SAVE_FILE)
+            logger.info("Saved list of authorized cards to file: %s", CARDS_SAVE_FILE)
         except Exception as e:
             # TODO: Catch a less generic exception. Just not quite sure if it's necessary to be very defensive here
             logger.error("An error occured while attempting to save list of cards: %s", e)
@@ -158,19 +164,31 @@ class DoorControl:
 
 def main(argv):
     import argparse
+    import stat
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--card_ids", type=str, help="Comma-separated list of authorized cards (for testing)")
     options = parser.parse_args(args=argv)
 
+    if not os.path.isfile(CARD_READER_BIN):
+        logger.fatal('File specified as CARD_READER_BIN does not exist: %s', CARD_READER_BIN)
+        sys.exit(1)
+    if not os.stat(CARD_READER_BIN).st_mode & stat.S_IXUSR:
+        logger.fatal('File %s is not executable by user', CARD_READER_BIN)
+        sys.exit(1)
+
     door = DoorControl()
+
+    logger.info("%s version %s" % (os.path.basename(__file__), VERSION))
 
     # Use a list of pre-authorized cards, valid up until first load/download
     if options.card_ids:
         for card_id in options.card_ids.split(","):
             door.authorized_cards.append(card_id)
 
-    door.authorized_cards.append("0x1337")
+    if TESTING:
+        door.authorized_cards.append("0x1337")
+
     door.run()
 
 

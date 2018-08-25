@@ -10,6 +10,8 @@ from syslogger import Syslogger
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
+VERSION = "2.1.0"
+
 CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
 OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")
@@ -162,19 +164,31 @@ class DoorControl:
 
 def main(argv):
     import argparse
+    import stat
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--card_ids", type=str, help="Comma-separated list of authorized cards (for testing)")
     options = parser.parse_args(args=argv)
 
+    if not os.path.isfile(CARD_READER_BIN):
+        logger.fatal('File specified as CARD_READER_BIN does not exist: %s', CARD_READER_BIN)
+        sys.exit(1)
+    if not os.stat(CARD_READER_BIN).st_mode & stat.S_IXUSR:
+        logger.fatal('File %s is not executable by user', CARD_READER_BIN)
+        sys.exit(1)
+
     door = DoorControl()
+
+    logger.info("%s version %s" % (os.path.basename(__file__), VERSION))
 
     # Use a list of pre-authorized cards, valid up until first load/download
     if options.card_ids:
         for card_id in options.card_ids.split(","):
             door.authorized_cards.append(card_id)
 
-    door.authorized_cards.append("0x1337")
+    if TESTING:
+        door.authorized_cards.append("0x1337")
+
     door.run()
 
 

@@ -10,6 +10,8 @@ from syslogger import Syslogger
 from base64 import b64encode
 from urllib.request import Request, urlopen
 
+VERSION = "2.1.0"
+
 CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
 OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")

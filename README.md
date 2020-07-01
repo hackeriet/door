@@ -10,6 +10,8 @@ GPIO door lock control
 - The cardreader is assumed connected with I²C on interface #1 (the lowest I²C pin numbers)
 - Authorized card numbers are downloaded from hackerhula
 
+![Pi installed inside door frame](./door-pi.jpg)
+
 ## Wiring
 
 Schematics of the circuit can be found in [/schematics](/schematics) which have been

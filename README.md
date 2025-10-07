@@ -19,34 +19,57 @@ created with [`gschem`][gschem].
 
 ## Installation
 
-Install dependencies
+Install dependencies (as root):
 
     # apt install wiringpi libnfc5 libnfc-dev build-essential
 
-Build `nfcreader`
+Build `nfcreader` (as door):
 
     $ cd nfcreader
     $ make
 
-Enable I²C interface
+Enable I²C interface (as root):
 
     # echo 'dtparam=i2c_arm=on' >> /boot/config.txt
 
-Specify where the NFC device can be found by libnfc
+Specify where the NFC device can be found by libnfc (as root):
 
     # echo 'device.connstring = "pn532_i2c:/dev/i2c-1"' > /etc/nfc/libnfc.conf
 
-Copy systemd service file to system folder
+Copy systemd service file to system folder (as root):
 
     # cp doord.service /etc/systemd/system
 
-Set password to upstream card list in environment variable
+Set password to upstream card list in environment variable (as root):
 
     # vim /etc/systemd/system/doord.service
 
-Reload, enable and start the service
+Reload, enable and start the service (as root):
 
     # systemctl daemon-reload && systemctl enable doord.service && systemctl start doord.service
+
+Configure the SSH-based entry service (as root):
+
+    # Add the user and fix rights
+    # Use password from hackerpass
+    adduser --shell /srv/door/open-door entry
+    usermod -a -G gpio entry
+
+    # Create a local authkey file, for consumption by the keys command
+    mkdir -p /home/entry/.ssh
+    touch /home/entry/.ssh/authorized_keys
+    chown -R entry:entry /home/entry/.ssh
+
+    # Install the SSH key command, which checks local files + SSO
+    cp /srv/door/ssh_entry_keys.py /usr/local/bin/
+    cp /srv/door/ssh-entry.conf /etc/ssh/sshd_config.d/50-door-entry.conf
+    chown root:root /usr/local/bin/ssh_entry_keys.py /etc/ssh/sshd_config.d/50-door-entry.conf
+
+    # Add an API token for the SSO account `svc-ssh-grouplists`
+    #   Hint: Generate a new one for this host from your own machine:
+    #   $ kanidm service-account api-token generate svc-ssh-grouplists "hostname-here-please.hackeriet.no"
+    echo '<token>' > /etc/door-sso-token
+    chown entry:entry /etc/door-sso-token
 
 Reboot!
 

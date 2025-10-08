@@ -21,32 +21,48 @@ created with [`gschem`][gschem].
 
 Install dependencies (as root):
 
-    # apt install wiringpi libnfc5 libnfc-dev build-essential
+    # apt install libnfc-dev libnfc-bin build-essential
 
-Build `nfcreader` (as door):
+Grab source code & prepare user (as root):
 
-    $ cd nfcreader
-    $ make
+    git clone git@github.com:hackeriet/door.git
+    mkdir -p /srv
+    mv door /srv/door
+
+    adduser --home /srv/door door
+    usermod -a -G gpio door
+    usermod -a -G i2c door
+    chown -R door:door /srv/door
+
+Install `pylibnfc` (as door):
+
+    sudo -u door -i
+    pip install --user --break-system-packages git+https://github.com/hackeriet/pylibnfc.git
 
 Enable I²C interface (as root):
 
-    # echo 'dtparam=i2c_arm=on' >> /boot/config.txt
+    vim /boot/firmware/config.txt
+    # Uncomment the following lines, which should already be present:
+    # dtparam=i2c_arm=on
+    # dtoverlay=pi3-disable-bt-overlay
 
 Specify where the NFC device can be found by libnfc (as root):
 
-    # echo 'device.connstring = "pn532_i2c:/dev/i2c-1"' > /etc/nfc/libnfc.conf
+    echo 'device.connstring = "pn532_i2c:/dev/i2c-1"' > /etc/nfc/libnfc.conf
 
 Copy systemd service file to system folder (as root):
 
-    # cp doord.service /etc/systemd/system
+    cp doord.service /etc/systemd/system
 
 Set password to upstream card list in environment variable (as root):
 
-    # vim /etc/systemd/system/doord.service
+    vim /etc/systemd/system/doord.service
 
 Reload, enable and start the service (as root):
 
-    # systemctl daemon-reload && systemctl enable doord.service && systemctl start doord.service
+    systemctl daemon-reload && systemctl enable doord.service && systemctl start doord.service
+
+Configure SSO, if desired: https://wiki.hackeriet.no/infra/services/hacker-id
 
 Configure the SSH-based entry service (as root):
 
@@ -54,6 +70,8 @@ Configure the SSH-based entry service (as root):
     # Use password from hackerpass
     adduser --shell /srv/door/open-door entry
     usermod -a -G gpio entry
+
+If Kanidm SSO is used, also configure SSO for the entry service (as root):
 
     # Create a local authkey file, for consumption by the keys command
     mkdir -p /home/entry/.ssh
@@ -78,7 +96,7 @@ Reboot!
 Trigger door lock
 
 ```
-$ GPIO_PIN_DOOR=0 STAY_UNLOCKED_SEC=2 open-door
+$ sudo /srv/door/open-door
 ```
 
 ## Trigger lock over network
@@ -89,7 +107,7 @@ Connect with SSH from the local network and use the password stored from hackerp
 The shell of the `entry` user is the `open-door` script. Connect with caution.
 
 ```
-$ ssh entry@10.0.20.10
+$ ssh entry@bac-door1.ackeriet.no
 ```
 
 ### Web interface
@@ -126,13 +144,9 @@ The test script currently has to be run from the project root to get correct pat
 
 ## References
 
-- [wiringPi wiring scheme][1]
-- [The `gpio` utility][2]
 - [Bash exit traps][3]
 - [Power a 5V relay from GPIO pins](https://raspberrypi.stackexchange.com/questions/27928/power-a-5v-relay-from-gpio-pins#28201)
 - [Logging in Systemd](https://www.loggly.com/blog/logging-in-new-style-daemons-with-systemd/)
 
-[1]: https://pinout.xyz/pinout/wiringpi
-[2]: https://projects.drogon.net/raspberry-pi/wiringpi/the-gpio-utility/
 [3]: http://redsymbol.net/articles/bash-exit-traps/
 [gschem]: https://wiki.archlinux.org/index.php/GEDA

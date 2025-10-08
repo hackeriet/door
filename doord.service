@@ -3,17 +3,18 @@ Description=Poll NFC card reader for authorized RFID tags and trigger door lock
 
 [Service]
 Group=i2c
-ExecStart=/usr/bin/env python3 -u /opt/door/doord.py
+ExecStart=/usr/bin/env python3 -u /srv/door/doord.py
 WorkingDirectory=/opt/door
+User=door
 Restart=always
 RestartSec=5
 
-Environment=GPIO_PIN_DOOR=0
+Environment=GPIO_PIN_DOOR=17
 Environment=STAY_UNLOCKED_SEC=2
 Environment=CARD_DATA_URL=https://hackeriet.no/hula/member/all_members.json
 Environment=CARD_DATA_USERNAME=
 Environment=CARD_DATA_PASSWORD=
-Environment=DEBUG=1
+#Environment=DEBUG=1
 
 [Install]
 WantedBy=default.target

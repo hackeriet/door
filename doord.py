@@ -121,45 +121,53 @@ class DoorControl:
             k = "card_number"
             for user in user_data:
                 if k in user and len(user[k]) > 0:
-                    cards.append(user[k])
+                    # Strip leading zeros from IDs
+                    cardid = user[k]
+                    if cardid.startswith("0x"):
+                        cardid = cardid[2:]
+                    cards.append(hex(int(cardid, base=16)))
 
         return cards
 
 
     def nfc_reader_worker(self):
-        with subprocess.Popen(CARD_READER_BIN, bufsize=1, stdout=subprocess.PIPE) as proc:
-            # TODO: When Python 3.6 is supported on target system, use `encoding` kwarg with Popen
-            # TODO: Pretty sure there's a more pythonic way
-            for line in iter(proc.stdout.readline, b""):
-                line = line.decode("utf-8")
+        import pylibnfc
+        monitor = pylibnfc.NfcMonitor()
+        while True:
+            tag_id = monitor.poll_for_tag(5)
+            if tag_id == 0:
+                continue
 
-                # Match on successful NFC tag reads
-                card_match = CARD_PATTERN.search(line[:-1])
-                if card_match is None:
-                    logger.debug("card_id regex pattern did not match: '%s'", line[:-1])
-                    continue
+            line = hex(tag_id).strip()
+            logger.info("Raw card: %r" % (line, ))
 
-                # Verify card is authorized
-                card_id = card_match.group(1)
-                if card_id not in self.authorized_cards:
-                    logger.warning("Card NOT authorized: %s", card_id)
-                    continue
+            # Match on successful NFC tag reads
+            card_match = CARD_PATTERN.search(line)
+            if card_match is None:
+                logger.debug("card_id regex pattern did not match: '%s'", line)
+                continue
 
-                logger.info("Card authorized: %s", card_id)
+            # Verify card is authorized
+            card_id = card_match.group(1)
+            if card_id not in self.authorized_cards:
+                logger.warning("Card NOT authorized: %s", card_id)
+                continue
 
-                # Trigger door lock
-                try:
-                    with subprocess.Popen(OPEN_DOOR_BIN) as proc:
-                        proc.wait(timeout=10)
-                        if proc.returncode == 0:
-                            logger.info("Door lock trigger script exited successfully")
-                        else:
-                            logger.error("Door lock trigger script exited uncleanly: %d", proc.returncode)
-                            (stdout, stderr) = proc.communicate()
-                            logger.error("door stdout: %s", stdout)
-                            logger.error("door stderr: %s", stderr)
-                except subprocess.TimeoutExpired:
-                    logger.error("Timed out waiting for lock trigger script to exit")
+            logger.info("Card authorized: %s", card_id)
+
+            # Trigger door lock
+            try:
+                with subprocess.Popen(OPEN_DOOR_BIN) as proc:
+                    proc.wait(timeout=10)
+                    if proc.returncode == 0:
+                        logger.info("Door lock trigger script exited successfully")
+                    else:
+                        logger.error("Door lock trigger script exited uncleanly: %d", proc.returncode)
+                        (stdout, stderr) = proc.communicate()
+                        logger.error("door stdout: %s", stdout)
+                        logger.error("door stderr: %s", stderr)
+            except subprocess.TimeoutExpired:
+                logger.error("Timed out waiting for lock trigger script to exit")
 
 
 def main(argv):

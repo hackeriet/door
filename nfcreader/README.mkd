@@ -1,0 +1,5 @@
+This folder contains the old code for interfacing with the libnfc I/O library.
+This code mysteriously fails to install under Raspbian 12 with either inexplicable linker errors or straight up compiler segfaults.
+
+Feel free to dig into this, however we're currently using some (very rudimentary) Python bindings instead, which additionally improves ergonomy somewhat:
+https://github.com/hackeriet/pylibnfc

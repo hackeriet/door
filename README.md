@@ -21,11 +21,11 @@ created with [`gschem`][gschem].
 
 Install dependencies (as root):
 
-    # apt install libnfc-dev libnfc-bin build-essential
+    apt install libnfc-dev libnfc-bin build-essential
 
 Grab source code & prepare user (as root):
 
-    git clone git@github.com:hackeriet/door.git
+    git clone https://github.com/hackeriet/door.git
     mkdir -p /srv
     mv door /srv/door
 

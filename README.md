@@ -107,7 +107,7 @@ Connect with SSH from the local network and use the password stored from hackerp
 The shell of the `entry` user is the `open-door` script. Connect with caution.
 
 ```
-$ ssh entry@bac-door1.ackeriet.no
+$ ssh entry@bac-door1.hackeriet.no
 ```
 
 ### Web interface

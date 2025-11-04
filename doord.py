@@ -19,6 +19,10 @@ OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")
 CARD_DATA_URL = os.getenv("CARD_DATA_URL")
 CARD_DATA_USERNAME = os.getenv("CARD_DATA_USERNAME")
 CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
+CARD_DATA_ID_FIELDS = [
+    "card_number",  # "new"
+    "access_card",  # "old"
+]
 
 UPDATE_INTERVAL = 15
 CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
@@ -118,14 +122,14 @@ class DoorControl:
                 raise ValueError("Invalid data format %s. Expected %s", type(user_data), list)
 
             # Extract card numbers from all users that have a registered card
-            k = "card_number"
             for user in user_data:
-                if k in user and len(user[k]) > 0:
-                    # Strip leading zeros from IDs
-                    cardid = user[k]
-                    if cardid.startswith("0x"):
-                        cardid = cardid[2:]
-                    cards.append(hex(int(cardid, base=16)))
+                for k in CARD_DATA_ID_FIELDS:
+                    cardid = user.get(k)
+                    if cardid:
+                        # Strip leading zeros from IDs
+                        if cardid.startswith("0x"):
+                            cardid = cardid[2:]
+                        cards.append(hex(int(cardid, base=16)))
 
         return cards
 

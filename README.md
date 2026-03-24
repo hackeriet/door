@@ -21,7 +21,7 @@ created with [`gschem`][gschem].
 
 Install dependencies (as root):
 
-    apt install libnfc-dev libnfc-bin build-essential
+    apt install libnfc-dev libnfc-bin build-essential rsyslog
 
 Grab source code & prepare user (as root):
 
@@ -53,6 +53,10 @@ Specify where the NFC device can be found by libnfc (as root):
 Copy systemd service file to system folder (as root):
 
     cp doord.service /etc/systemd/system
+
+Copy rsyslog config (as root):
+
+    cp rsyslog.conf /etc/rsyslog.d/hackeriet-librenms.conf
 
 Set password to upstream card list in environment variable (as root):
 

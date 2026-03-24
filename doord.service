@@ -3,7 +3,7 @@ Description=Poll NFC card reader for authorized RFID tags and trigger door lock
 
 [Service]
 Group=i2c
-ExecStart=/usr/bin/python3 -u /srv/door/doord.py
+ExecStart=systemd-cat -t doord python3 -u /srv/door/doord.py
 WorkingDirectory=/opt/door
 User=door
 Restart=always

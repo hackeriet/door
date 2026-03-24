@@ -67,7 +67,11 @@ class DoorControl:
                     logger.info("Successfully downloaded card data")
                     last_download_failed = False
 
-                if len(fresh_cards) > 0 and fresh_cards != self.authorized_cards:
+                if len(fresh_cards) < 1:
+                    logger.error("No cards were returned by Hula, wtf?")
+                elif fresh_cards == self.authorized_cards:
+                    logger.info("No new cards returned")
+                elif len(fresh_cards) > 0 and fresh_cards != self.authorized_cards:
                     logger.info("Now there are %d authorized card(s) (was %d)", len(fresh_cards), len(self.authorized_cards))
                     self.authorized_cards = fresh_cards
                     # Persist successfully downloaded lists

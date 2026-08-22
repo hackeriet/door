@@ -1,4 +1,5 @@
 import json
+import socket
 import sys
 import time
 import subprocess
@@ -16,13 +17,9 @@ CARD_PATTERN = re.compile("(0x[a-f0-9]+)", re.IGNORECASE)
 CARD_READER_BIN = os.getenv("CARD_READER_BIN", default="./nfcreader/nfcreader")
 OPEN_DOOR_BIN = os.getenv("OPEN_DOOR_BIN", default="./open-door")
 
-CARD_DATA_URL = os.getenv("CARD_DATA_URL")
+CARD_DATA_URL = f"https://hackeriet.no/hula/api/nfc/cards/v1?scope=bac:{socket.getfqdn()}"
 CARD_DATA_USERNAME = os.getenv("CARD_DATA_USERNAME")
 CARD_DATA_PASSWORD = os.getenv("CARD_DATA_PASSWORD")
-CARD_DATA_ID_FIELDS = [
-    "card_number",  # "new"
-    "access_card",  # "old"
-]
 
 UPDATE_INTERVAL = 15
 CARDS_SAVE_FILE = os.getenv("CARD_DATA_FILE", default="./.card_data")
@@ -119,24 +116,31 @@ class DoorControl:
         cards = list()
 
         with urlopen(req) as res:
-            user_data = json.loads(res.read().decode())
+            user_data = json.loads(res.read().decode())["cards"]
 
             # Expect an array
             if type(user_data) is not list:
                 raise ValueError("Invalid data format %s. Expected %s", type(user_data), list)
 
             # Extract card numbers from all users that have a registered card
-            for user in user_data:
-                for k in CARD_DATA_ID_FIELDS:
-                    cardid = user.get(k)
-                    if cardid:
-                        # Strip leading zeros from IDs
-                        if cardid.startswith("0x"):
-                            cardid = cardid[2:]
-                        cards.append(hex(int(cardid, base=16)))
+            for card in user_data:
+                cards.append(card["tag_id"])
 
         return cards
 
+    def normalize_tag(self, tag_id: str) -> str:
+        tag_id = tag_id.strip()
+
+        # Strip the hex-digit prefix
+        if tag_id.startswith("0x"):
+            tag_id = tag_id[2:]
+
+        # Reverse the zero-trim that was used on the left-most octet due to the
+        # above hack
+        if len(tag_id) % 2 == 1:
+            tag_id = f"0{tag_id}"
+
+        return tag_id.upper()
 
     def nfc_reader_worker(self):
         import pylibnfc
@@ -158,7 +162,7 @@ class DoorControl:
                     continue
 
                 # Verify card is authorized
-                card_id = card_match.group(1)
+                card_id = self.normalize_tag(card_match.group(1))
                 if card_id not in self.authorized_cards:
                     logger.warning("Card NOT authorized: %s", card_id)
                     continue
